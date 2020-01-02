@@ -44,10 +44,17 @@
             labelContainer.appendChild(document.createElement("div"));
         }
 
+        let ready = false
+
         // listen() takes two arguments:
         // 1. A callback function that is invoked anytime a word is recognized.
         // 2. A configuration object with adjustable fields
         recognizer.listen(result => {
+            if ( !ready ) {
+              ready = true
+              socket && socket.emit( 'ready' )
+            }
+
             const scores = result.scores; // probability of prediction for each class
             // render the probability scores per class
             for (let i = 0; i < classLabels.length; i++) {
