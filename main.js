@@ -14,9 +14,10 @@ const server = http.createServer( app )
 const kiite = require( 'kiite' )
 const io = kiite( server )
 
-process.on( 'exit', function () {
-  nz.clean()
-  process.exit(0)
+process.on( 'SIGINT', function () {
+  nz.add( process.pid )
+  nz.kill()
+  process.exit()
 } )
 
 const childProcess = require( 'child_process' )
