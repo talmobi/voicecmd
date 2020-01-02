@@ -22,6 +22,13 @@ const nz = nozombie()
 io.on( 'connect', function ( socket ) {
   console.log( 'kiite socket connected!' )
 
+  socket.on( 'ready', function () {
+    console.log( 'ready! listening for voice commands:' )
+
+    // list of voice commands
+    console.log( '  monitor off' )
+  } )
+
   socket.on( 'execute', function ( command ) {
     console.log( 'socket command execution: ' + command )
 
