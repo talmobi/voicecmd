@@ -14,6 +14,11 @@ const server = http.createServer( app )
 const kiite = require( 'kiite' )
 const io = kiite( server )
 
+process.on( 'exit', function () {
+  nz.clean()
+  process.exit(0)
+} )
+
 const childProcess = require( 'child_process' )
 // track spawns
 const nozombie = require( 'nozombie' )
@@ -79,6 +84,8 @@ async function launchPuppeteer ( port ) {
   ]
 
   const browser = await puppeteer.launch( opts )
+  const pid = browser.process().pid
+  nz.add( pid )
   const page = await browser.newPage()
 
   const preload = (`
