@@ -21,7 +21,7 @@
     "turn off"
   ],
   "author": "talmobi <talmo.christian@gmail.com>",
-  "license": "ISC",
+  "license": "MIT",
   "homepage": "https://github.com/talmobi/voicecmd#readme",
   "bugs": {
     "url": "https://github.com/talmobi/voicecmd/issues"
