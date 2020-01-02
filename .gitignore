@@ -1,0 +1,13 @@
+node_modules
+
+# vim temp files
+*.swp
+*.swo
+*.swn
+*.swm
+
+# mac files
+*.DS_Store
+
+# junk files
+test.wav
