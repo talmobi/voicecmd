@@ -6,6 +6,13 @@
   "bin": {
     "voicecmd": "./bin/cli.js"
   },
+  "files": [
+    "main.js",
+    "index.html",
+    "tm-my-audio-model/",
+    "vendor/",
+    "bin/cli.js"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
