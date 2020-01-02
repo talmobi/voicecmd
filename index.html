@@ -55,7 +55,7 @@
                 labelContainer.childNodes[i].innerHTML = classPrediction;
             }
 
-            if ( scores[ 0 ] >= 0.85 ) {
+            if ( scores[ 0 ] >= 0.75 ) {
               console.log( 'Trigger Monitor Sleep!' )
               const bg = document.body.style.background
               document.body.style.background = '#222'
