@@ -10,4 +10,5 @@ node_modules
 *.DS_Store
 
 # junk files
+preload.js
 test.wav
