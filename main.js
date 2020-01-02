@@ -74,7 +74,7 @@ async function start () {
 async function launchPuppeteer ( port ) {
   const opts = {
     // set to false to see what we're doing during development
-    headless: false
+    headless: true
   }
 
   // auto allow mic access
