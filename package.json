@@ -27,12 +27,12 @@
     "url": "https://github.com/talmobi/voicecmd/issues"
   },
   "dependencies": {
-    "@tensorflow-models/speech-commands": "^0.4.1",
-    "@tensorflow/tfjs": "^1.5.1",
-    "express": "^4.17.1",
-    "get-port": "^5.1.0",
-    "kiite": "^0.3.3",
-    "nozombie": "^0.5.0",
-    "puppeteer": "^2.0.0"
+    "@tensorflow-models/speech-commands": "0.4.1",
+    "@tensorflow/tfjs": "1.5.1",
+    "express": "4.17.1",
+    "get-port": "5.1.0",
+    "kiite": "0.3.3",
+    "nozombie": "0.5.0",
+    "puppeteer": "^.0.0"
   }
 }
