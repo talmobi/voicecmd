@@ -9,9 +9,23 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/talmobi/voicecmd.git"
+  },
+  "keywords": [
+    "voice",
+    "command",
+    "monitor",
+    "display",
+    "turn off"
+  ],
+  "author": "talmobi <talmo.christian@gmail.com>",
   "license": "ISC",
+  "homepage": "https://github.com/talmobi/voicecmd#readme",
+  "bugs": {
+    "url": "https://github.com/talmobi/voicecmd/issues"
+  },
   "dependencies": {
     "@tensorflow-models/speech-commands": "^0.4.1",
     "@tensorflow/tfjs": "^1.5.1",
