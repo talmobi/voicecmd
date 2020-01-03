@@ -21,6 +21,7 @@
     "url": "git+https://github.com/talmobi/voicecmd.git"
   },
   "keywords": [
+    "voicecmd",
     "voice",
     "command",
     "monitor",
