@@ -64,6 +64,7 @@
 
             socket && socket.emit( 'scores', scores )
 
+            if ( scores[ 0 ] >= 0.95 ) {
               console.log( 'Trigger Monitor Sleep!' )
               const bg = document.body.style.background
               document.body.style.background = '#222'
