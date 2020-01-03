@@ -3,6 +3,9 @@ const puppeteer = require( 'puppeteer' )
 const fs = require( 'fs' )
 const path = require( 'path' )
 
+// text-to-speech
+const say = require( 'say' )
+
 const express = require( 'express' )
 const http = require( 'http' )
 const app = express()
@@ -43,7 +46,7 @@ io.on( 'connect', function ( socket ) {
     const cmd = split.shift() // first element is command
     const args = split // the rest are arguments
 
-    const spawn = childProcess.spawn( cmd, args )
+    say.speak( 'Voice command detected.' )
 
     // pipe output to console
     spawn.stdout.pipe( process.stdout )
