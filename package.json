@@ -40,6 +40,6 @@
     "get-port": "5.1.0",
     "kiite": "0.3.3",
     "nozombie": "0.5.0",
-    "puppeteer": "^.0.0"
+    "puppeteer": "2.0.0",
   }
 }
