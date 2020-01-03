@@ -50,10 +50,10 @@ io.on( 'connect', function ( socket ) {
   console.log( 'kiite socket connected!' )
 
   socket.on( 'ready', function () {
-    console.log( 'ready! listening for voice commands:' )
-
-    // list of voice commands
-    console.log( '  monitor off' )
+    setTimeout( function () {
+      _ready = true
+      console.log( 'ready! listening for voice commands:' )
+    }, 3000 )
   } )
 
   socket.on( 'scores', function ( scores ) {
