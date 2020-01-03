@@ -44,6 +44,8 @@
             labelContainer.appendChild(document.createElement("div"));
         }
 
+        // remember bg color
+        const _background = document.body.style.background
         let ready = false
 
         // listen() takes two arguments:
@@ -69,14 +71,9 @@
               const bg = document.body.style.background
               document.body.style.background = '#222'
 
-              if ( socket ) {
-                // socket.emit( 'execute', 'echo "hello world!"' )
-                socket.emit( 'execute', 'nircmd monitor off' )
-              }
-
-
-              setTimeout( function () {
-                document.body.style.background = bg
+              clearTimeout( _clearBgTimeout )
+              _clearBgTimeout = setTimeout( function () {
+                document.body.style.background = _background
               }, 500 )
             }
         }, {
