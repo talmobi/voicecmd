@@ -21,20 +21,30 @@ app.use( express.static( __dirname ) )
 
 const server = http.createServer( app )
 
+// get random free port to start server on
+const getPort = require( 'get-port' )
+
 // polling sockets
 const kiite = require( 'kiite' )
 const io = kiite( server )
 
-process.on( 'SIGINT', function () {
-  nz.add( process.pid )
-  nz.kill()
-  process.exit()
-} )
-
 const childProcess = require( 'child_process' )
 // track spawns
 const nozombie = require( 'nozombie' )
-const nz = nozombie()
+const _nz = nozombie()
+
+process.on( 'SIGINT', function () {
+  _nz.add( process.pid )
+  _nz.kill()
+  process.exit()
+} )
+
+let _ready = false
+
+// time-to-live
+const _word_ttl = 1000 * 5
+// recognized words
+let _words = []
 
 io.on( 'connect', function ( socket ) {
   console.log( 'kiite socket connected!' )
@@ -47,9 +57,7 @@ io.on( 'connect', function ( socket ) {
   } )
 
   socket.on( 'scores', function ( scores ) {
-    const score = decimals( scores[ 0 ], 2 )
-    console.log( `voicecmd[Monitor Off]: ${ score }` )
-  } )
+    if ( !_ready ) return
 
   socket.on( 'execute', function ( command ) {
     console.log( 'socket command execution: ' + command )
@@ -130,7 +138,7 @@ async function launchPuppeteer ( port ) {
 
   const browser = await puppeteer.launch( opts )
   const pid = browser.process().pid
-  nz.add( pid )
+  _nz.add( pid )
   const page = await browser.newPage()
 
   const preload = (`
@@ -140,13 +148,4 @@ async function launchPuppeteer ( port ) {
   fs.writeFileSync( 'preload.js', preload, 'utf8' )
 
   await page.goto( `http://127.0.0.1:${ port }` )
-}
-
-function decimals ( num, decimals ) {
-  num = String( num )
-  const split = num.split( '.' )
-  let dec = split[ 1 ]
-  while ( dec.length < decimals ) dec += '0'
-  if ( dec.length > decimals ) dec = dec.slice( 0, decimals )
-  return split[ 0 ] + '.' + dec
 }
