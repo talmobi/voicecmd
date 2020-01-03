@@ -115,9 +115,6 @@ io.on( 'connect', function ( socket ) {
   } )
 } )
 
-// get random free port
-const getPort = require( 'get-port' )
-
 start()
 
 function momoIsListening () {
