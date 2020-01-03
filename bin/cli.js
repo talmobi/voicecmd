@@ -45,7 +45,7 @@ api.events.on( 'ichi-ban', function () {
 } )
 
 api.events.on( 'ni-ban', function () {
-  say.speak( 'momo found san-ban command!' )
+  say.speak( 'momo found knee-ban command!' )
 } )
 
 api.events.on( 'san-ban', function () {
