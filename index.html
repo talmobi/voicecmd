@@ -57,12 +57,19 @@
               socket && socket.emit( 'ready' )
             }
 
-            const scores = result.scores; // probability of prediction for each class
+            const scores = {}
+            classLabels.forEach( function ( label, i ) {
+              // probability of prediction for each class
+              label = label.toLowerCase().trim()
+              scores[ label ] = result.scores[ i ].toFixed( 2 )
+            } )
+
             // render the probability scores per class
             for (let i = 0; i < classLabels.length; i++) {
                 const classPrediction = classLabels[i] + ": " + result.scores[i].toFixed(2);
                 labelContainer.childNodes[i].innerHTML = classPrediction;
             }
+
 
             socket && socket.emit( 'scores', scores )
 
