@@ -53,6 +53,17 @@ io.on( 'connect', function ( socket ) {
     setTimeout( function () {
       _ready = true
       console.log( 'ready! listening for voice commands:' )
+
+      // print list of available commands
+      console.log( 'recognized words:' )
+      console.log( 'momo-san, ichi-ban, ni-ban, san-ban, hai, iie' )
+
+      console.log( 'recognized commands ( two word combinations ):' )
+      console.log( 'momo-san, ichi-ban' )
+      console.log( 'momo-san, ni-ban' )
+      console.log( 'momo-san, san-ban' )
+      console.log( 'momo-san, hai' )
+      console.log( 'momo-san, iie' )
     }, 3000 )
   } )
 
