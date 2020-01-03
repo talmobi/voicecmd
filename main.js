@@ -145,6 +145,17 @@ function tick () {
   setTimeout( tick, 1000 )
 }
 
+let _reset_timeout = undefined
+function reset ( ms ) {
+  _words = []
+  _ready = false
+
+  clearTimeout( _reset_timeout )
+  _reset_timeout = setTimeout( function () {
+    _ready = true
+  }, ms || 2000 )
+}
+
 function updateWords ( hasNewWords ) {
   if ( _words.length < 1 ) return
 
@@ -159,7 +170,7 @@ function updateWords ( hasNewWords ) {
 
   if ( momoWasListening && !momoIsListening() ) {
     say.speak( 'Momo did not understand, please try again.' )
-    _words = []
+    reset()
     return
   }
 
@@ -177,27 +188,27 @@ function updateWords ( hasNewWords ) {
 
   if ( str.match( /momo-san,.*ichi-ban/ ) ) {
     say.speak( 'momo found ichi-ban command!' )
-    _words = []
+    reset()
   }
 
   if ( str.match( /momo-san,.*ni-ban/ ) ) {
     say.speak( 'momo found knee-ban command!' )
-    _words = []
+    reset()
   }
 
   if ( str.match( /momo-san,.*san-ban/ ) ) {
     say.speak( 'momo found san-ban command!' )
-    _words = []
+    reset()
   }
 
   if ( str.match( /momo-san,.*hai/ ) ) {
     say.speak( 'Yes.' )
-    _words = []
+    reset()
   }
 
   if ( str.match( /momo-san,.*iie/ ) ) {
     say.speak( 'No.' )
-    _words = []
+    reset()
   }
 }
 
