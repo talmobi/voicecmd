@@ -73,9 +73,8 @@
 
             socket && socket.emit( 'scores', scores )
 
-            if ( scores[ 0 ] >= 0.95 ) {
-              console.log( 'Trigger Monitor Sleep!' )
-              const bg = document.body.style.background
+            let _clearBgTimeout = undefined
+            if ( scores[ '_background_noise_' ] < 0.05 ) {
               document.body.style.background = '#222'
 
               clearTimeout( _clearBgTimeout )
