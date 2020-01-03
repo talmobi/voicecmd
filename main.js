@@ -59,50 +59,54 @@ io.on( 'connect', function ( socket ) {
   socket.on( 'scores', function ( scores ) {
     if ( !_ready ) return
 
-  socket.on( 'execute', function ( command ) {
-    console.log( 'socket command execution: ' + command )
+    // console.log( 'scores' )
+    // console.log( scores )
 
-    const split = command.trim().split( /\s+/ )
+    const labels = Object.keys( scores )
+    const sorted = labels.map( function ( label ) {
+      // also turn into number
+      scores[ label ] = Number( scores[ label ] )
 
-    const cmd = split.shift() // first element is command
-    const args = split // the rest are arguments
+      return {
+        label: label,
+        score: scores[ label ]
+      }
+    } ).sort( function ( a, b ) {
+      return b.score - a.score
+    } )
 
-    say.speak( 'Voice command detected. Executing in 15 seconds of idle mouse time.' )
+    let highest = sorted[ 0 ].label
+    // console.log( 'highest: ' + highest )
 
-    const mouse = robot.getMousePos()
-    const exec_time = Date.now()
+    // if momo-san command is already listening give second
+    // highest command priority
+    if ( momoIsListening() && highest === 'momo-san' ) {
+      highest = sorted[ 1 ].label
+    }
 
-    _exec_timeout = setTimeout( function () {
-      const mouse_now = robot.getMousePos()
+    let trigger = false
 
-      if ( mouse.x != mouse_now.x || mouse.y != mouse_now.y ) {
-        console.log( 'mouse position changed, canceling command.' )
-        // mouse position changes -> not idle -> cancel command
-        // execution
-        return
+    if ( scores[ '_background_noise_' ] < .25 ) {
+      if ( scores[ highest ] >= 0.35 ) {
+        trigger = true
+      }
+    }
+
+    if ( trigger ) {
+      switch ( highest ) {
+        case 'momo-san':
+          say.speak( 'Momo!' )
+          break
       }
 
-      if ( _idle_since < exec_time ) {
-        say.speak( 'Executing command.' )
+      const now = Date.now()
+      // add to end of array
+      _words.push( {
+        label: highest,
+        time: now
+      } )
 
-        setTimeout( function () {
-          execute()
-        }, 2000 )
-      }
-    }, 1000 * 15 )
-
-    function execute () {
-      say.speak( 'Executing command!' )
-      console.log( 'executing' )
-
-      const spawn = childProcess.spawn( cmd, args )
-      // time-to-live should exit within 10 seconds
-      const ttl = 1000 * 10
-      nz.add( spawn.pid, ttl )
-
-      // pipe output to console
-      spawn.stdout.pipe( process.stdout )
-      spawn.stderr.pipe( process.stderr )
+      updateWords( true )
     }
   } )
 
@@ -115,6 +119,79 @@ io.on( 'connect', function ( socket ) {
 const getPort = require( 'get-port' )
 
 start()
+
+function momoIsListening () {
+  for ( let i = 0; i < _words.length; i++ ) {
+    const word = _words[ i ]
+    if ( word.label === 'momo-san' ) return true
+  }
+
+  return false
+}
+
+// start ticking
+setTimeout( tick, 1000 )
+
+function tick () {
+  updateWords( false )
+  setTimeout( tick, 1000 )
+}
+
+function updateWords ( hasNewWords ) {
+  if ( _words.length < 1 ) return
+
+  const momoWasListening = momoIsListening()
+
+  const now = Date.now()
+  // remove old words
+  _words = _words.filter( function ( word ) {
+    const delta = ( now - word.time )
+    return delta <= _word_ttl
+  } )
+
+  if ( momoWasListening && !momoIsListening() ) {
+    say.speak( 'Momo did not understand, please try again.' )
+    _words = []
+    return
+  }
+
+  var str = (
+    _words.map( function ( v ) { return v.label } )
+    .join( ',' )
+  )
+
+  hasNewWords && console.log( 'parsing: ' )
+  // log only labels
+  hasNewWords && console.log(
+    _words.map( function ( v ) { return v.label } )
+    .join( ',' )
+  )
+
+  if ( str.match( /momo-san,.*ichi-ban/ ) ) {
+    say.speak( 'momo found ichi-ban command!' )
+    _words = []
+  }
+
+  if ( str.match( /momo-san,.*ni-ban/ ) ) {
+    say.speak( 'momo found knee-ban command!' )
+    _words = []
+  }
+
+  if ( str.match( /momo-san,.*san-ban/ ) ) {
+    say.speak( 'momo found san-ban command!' )
+    _words = []
+  }
+
+  if ( str.match( /momo-san,.*hai/ ) ) {
+    say.speak( 'Yes.' )
+    _words = []
+  }
+
+  if ( str.match( /momo-san,.*iie/ ) ) {
+    say.speak( 'No.' )
+    _words = []
+  }
+}
 
 async function start () {
   const port = await getPort()
