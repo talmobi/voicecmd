@@ -48,13 +48,16 @@ io.on( 'connect', function ( socket ) {
 
     say.speak( 'Voice command detected.' )
 
-    // pipe output to console
-    spawn.stdout.pipe( process.stdout )
-    spawn.stderr.pipe( process.stderr )
+    function execute () {
+      const spawn = childProcess.spawn( cmd, args )
+      // time-to-live should exit within 10 seconds
+      const ttl = 1000 * 10
+      nz.add( spawn.pid, ttl )
 
-    // time-to-live should exit within 10 seconds
-    const ttl = 1000 * 10
-    nz.add( spawn.pid, ttl )
+      // pipe output to console
+      spawn.stdout.pipe( process.stdout )
+      spawn.stderr.pipe( process.stderr )
+    }
   } )
 
   socket.on( 'disconnect', function ( command ) {
