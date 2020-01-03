@@ -1,5 +1,13 @@
 const puppeteer = require( 'puppeteer' )
 
+const api = {}
+
+api.events = new ( require( 'events' ) )()
+api.start = start
+api.stop = stop
+
+module.exports = api
+
 // track mouse position to detect "idle" time -> execute
 // command only if mouse position has not moved within a certain
 // short period.
@@ -10,9 +18,6 @@ let _idle_since = Date.now()
 
 const fs = require( 'fs' )
 const path = require( 'path' )
-
-// text-to-speech
-const say = require( 'say' )
 
 const express = require( 'express' )
 const http = require( 'http' )
@@ -26,12 +31,13 @@ const getPort = require( 'get-port' )
 
 // polling sockets
 const kiite = require( 'kiite' )
-const io = kiite( server )
 
 const childProcess = require( 'child_process' )
 // track spawns
 const nozombie = require( 'nozombie' )
 const _nz = nozombie()
+
+let _started = false
 
 process.on( 'SIGINT', function () {
   _nz.add( process.pid )
@@ -46,25 +52,16 @@ const _word_ttl = 1000 * 5
 // recognized words
 let _words = []
 
-io.on( 'connect', function ( socket ) {
-  console.log( 'kiite socket connected!' )
+function handleSocket ( socket ) {
+  // console.log( 'kiite socket connected!' )
 
   socket.on( 'ready', function () {
     setTimeout( function () {
-      _ready = true
-      console.log( 'ready! listening for voice commands:' )
-
-      // print list of available commands
-      console.log( 'recognized words:' )
-      console.log( 'momo-san, ichi-ban, ni-ban, san-ban, hai, iie' )
-
-      console.log( 'recognized commands ( two word combinations ):' )
-      console.log( 'momo-san, ichi-ban' )
-      console.log( 'momo-san, ni-ban' )
-      console.log( 'momo-san, san-ban' )
-      console.log( 'momo-san, hai' )
-      console.log( 'momo-san, iie' )
-    }, 3000 )
+      api.events.emit( 'ready' )
+      setTimeout( function () {
+        _ready = true
+      }, 1500 )
+    }, 1500 )
   } )
 
   socket.on( 'scores', function ( scores ) {
@@ -106,7 +103,7 @@ io.on( 'connect', function ( socket ) {
     if ( trigger ) {
       switch ( highest ) {
         case 'momo-san':
-          say.speak( 'Momo!' )
+          api.events.emit( 'momo' )
           break
       }
 
@@ -124,9 +121,7 @@ io.on( 'connect', function ( socket ) {
   socket.on( 'disconnect', function ( command ) {
     console.log( 'kiite socket left.' )
   } )
-} )
-
-start()
+}
 
 function momoIsListening () {
   for ( let i = 0; i < _words.length; i++ ) {
@@ -137,9 +132,6 @@ function momoIsListening () {
   return false
 }
 
-// start ticking
-setTimeout( tick, 1000 )
-
 function tick () {
   updateWords( false )
   setTimeout( tick, 1000 )
@@ -149,6 +141,12 @@ let _reset_timeout = undefined
 function reset ( ms ) {
   _words = []
   _ready = false
+
+  const str = (
+    _words.map( function ( v ) { return v.label } )
+    .join( ',' )
+  )
+  api.words = str
 
   clearTimeout( _reset_timeout )
   _reset_timeout = setTimeout( function () {
@@ -169,53 +167,67 @@ function updateWords ( hasNewWords ) {
   } )
 
   if ( momoWasListening && !momoIsListening() ) {
-    say.speak( 'Momo did not understand, please try again.' )
+    api.events.emit( 'momofail' )
     reset()
     return
   }
 
-  var str = (
+  const str = (
     _words.map( function ( v ) { return v.label } )
     .join( ',' )
   )
-
-  hasNewWords && console.log( 'parsing: ' )
-  // log only labels
-  hasNewWords && console.log(
-    _words.map( function ( v ) { return v.label } )
-    .join( ',' )
-  )
+  api.words = str
+  hasNewWords && api.events.emit( 'parsing-new', str )
 
   if ( str.match( /momo-san,.*ichi-ban/ ) ) {
-    say.speak( 'momo found ichi-ban command!' )
+    api.events.emit( 'ichi-ban' )
     reset()
   }
 
   if ( str.match( /momo-san,.*ni-ban/ ) ) {
-    say.speak( 'momo found knee-ban command!' )
+    api.events.emit( 'ni-ban' )
     reset()
   }
 
   if ( str.match( /momo-san,.*san-ban/ ) ) {
-    say.speak( 'momo found san-ban command!' )
+    api.events.emit( 'san-ban' )
     reset()
   }
 
   if ( str.match( /momo-san,.*hai/ ) ) {
-    say.speak( 'Yes.' )
+    api.events.emit( 'hai' )
     reset()
   }
 
   if ( str.match( /momo-san,.*iie/ ) ) {
-    say.speak( 'No.' )
+    api.events.emit( 'iie' )
     reset()
   }
 }
 
+function stop () {
+  _nz.clean()
+  server.close( function () {
+    _started = false
+  } )
+}
+
 async function start () {
+  if ( _started ) return
+  _started = true
+
+  // start ticking
+  setTimeout( tick, 1000 )
+
+  // attach socket (polling) server
+  const io = kiite( server )
+
+  io.on( 'connect', handleSocket )
+
   const port = await getPort()
   server.listen( port, function () {
-    console.log( 'server listening at: ', server.address() )
+    api.server = server
+    api.events.emit( 'listening', server.address() )
     launchPuppeteer( server.address().port )
   } )
 }
