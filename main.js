@@ -1,5 +1,13 @@
 const puppeteer = require( 'puppeteer' )
 
+// track mouse position to detect "idle" time -> execute
+// command only if mouse position has not moved within a certain
+// short period.
+const robot = require( 'robotjs' )
+
+let _exec_timeout = undefined
+let _idle_since = Date.now()
+
 const fs = require( 'fs' )
 const path = require( 'path' )
 
@@ -51,9 +59,34 @@ io.on( 'connect', function ( socket ) {
     const cmd = split.shift() // first element is command
     const args = split // the rest are arguments
 
-    say.speak( 'Voice command detected.' )
+    say.speak( 'Voice command detected. Executing in 15 seconds of idle mouse time.' )
+
+    const mouse = robot.getMousePos()
+    const exec_time = Date.now()
+
+    _exec_timeout = setTimeout( function () {
+      const mouse_now = robot.getMousePos()
+
+      if ( mouse.x != mouse_now.x || mouse.y != mouse_now.y ) {
+        console.log( 'mouse position changed, canceling command.' )
+        // mouse position changes -> not idle -> cancel command
+        // execution
+        return
+      }
+
+      if ( _idle_since < exec_time ) {
+        say.speak( 'Executing command.' )
+
+        setTimeout( function () {
+          execute()
+        }, 2000 )
+      }
+    }, 1000 * 15 )
 
     function execute () {
+      say.speak( 'Executing command!' )
+      console.log( 'executing' )
+
       const spawn = childProcess.spawn( cmd, args )
       // time-to-live should exit within 10 seconds
       const ttl = 1000 * 10
