@@ -38,6 +38,11 @@ io.on( 'connect', function ( socket ) {
     console.log( '  monitor off' )
   } )
 
+  socket.on( 'scores', function ( scores ) {
+    const score = decimals( scores[ 0 ], 2 )
+    console.log( `voicecmd[Monitor Off]: ${ score }` )
+  } )
+
   socket.on( 'execute', function ( command ) {
     console.log( 'socket command execution: ' + command )
 
@@ -102,4 +107,13 @@ async function launchPuppeteer ( port ) {
   fs.writeFileSync( 'preload.js', preload, 'utf8' )
 
   await page.goto( `http://127.0.0.1:${ port }` )
+}
+
+function decimals ( num, decimals ) {
+  num = String( num )
+  const split = num.split( '.' )
+  let dec = split[ 1 ]
+  while ( dec.length < decimals ) dec += '0'
+  if ( dec.length > decimals ) dec = dec.slice( 0, decimals )
+  return split[ 0 ] + '.' + dec
 }
