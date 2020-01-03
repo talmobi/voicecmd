@@ -8,14 +8,6 @@ api.stop = stop
 
 module.exports = api
 
-// track mouse position to detect "idle" time -> execute
-// command only if mouse position has not moved within a certain
-// short period.
-const robot = require( 'robotjs' )
-
-let _exec_timeout = undefined
-let _idle_since = Date.now()
-
 const fs = require( 'fs' )
 const path = require( 'path' )
 
