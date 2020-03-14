@@ -1,251 +1,95 @@
-const puppeteer = require( 'puppeteer' )
-
-const api = {}
-
-api.events = new ( require( 'events' ) )()
-api.start = start
-api.stop = stop
-
-module.exports = api
+const puppeteer = require( 'puppeteer-core' )
+const chromePath = require( 'chrome-finder' )()
+const fileUrl = require( 'file-url' )
 
 const fs = require( 'fs' )
 const path = require( 'path' )
 
-const express = require( 'express' )
-const http = require( 'http' )
-const app = express()
-app.use( express.static( __dirname ) )
+const eeto = require( 'eeto' )
 
-const server = http.createServer( app )
+module.exports = main
 
-// get random free port to start server on
-const getPort = require( 'get-port' )
+let _tick_timeout
+function main () {
+  // return this event emitter api to user
+  const api = eeto()
 
-// polling sockets
-const kiite = require( 'kiite' )
+  api.close = api.exit = async function () {
+    try {
+      await browser.close()
+    } catch ( ignore ) {}
+  }
 
-const childProcess = require( 'child_process' )
-// track spawns
-const nozombie = require( 'nozombie' )
-const _nz = nozombie()
+  ;( async function () {
+    const opts = {
+      executablePath: chromePath,
+      headless: false,
+      ignoreDefaultArgs: [
+        '--mute-audio',
+        '--hide-scrollbars',
+        // '--enable-automation'
+      ],
+      args: [
+        // '--no-sandbox',
+        '--window-position=0,0',
+        '--window-size=1,1',
+        '--allow-insecure-localhost',
+        '--use-fake-ui-for-media-stream', // auto allow mic
+      ]
+    }
+    const browser = await puppeteer.launch( opts )
+    const [ page ] = await browser.pages()
 
-let _started = false
+    page.on( 'close', async function () {
+      api.emit( 'exit' )
+      api.emit( 'close' )
+      clearTimeout( _tick_timeout )
 
-process.on( 'SIGINT', function () {
-  _nz.add( process.pid )
-  _nz.kill()
-  process.exit()
-} )
-
-let _ready = false
-
-// time-to-live
-const _word_ttl = 1000 * 5
-// recognized words
-let _words = []
-
-function handleSocket ( socket ) {
-  // console.log( 'kiite socket connected!' )
-
-  socket.on( 'ready', function () {
-    setTimeout( function () {
-      api.events.emit( 'ready' )
-      setTimeout( function () {
-        _ready = true
-      }, 1500 )
-    }, 1500 )
-  } )
-
-  socket.on( 'scores', function ( scores ) {
-    if ( !_ready ) return
-
-    // console.log( 'scores' )
-    // console.log( scores )
-
-    const labels = Object.keys( scores )
-    const sorted = labels.map( function ( label ) {
-      // also turn into number
-      scores[ label ] = Number( scores[ label ] )
-
-      return {
-        label: label,
-        score: scores[ label ]
-      }
-    } ).sort( function ( a, b ) {
-      return b.score - a.score
+      try {
+        await browser.close()
+      } catch ( ignore ) {}
     } )
 
-    let highest = sorted[ 0 ].label
-    // console.log( 'highest: ' + highest )
+    // await page.setViewport( {
+    //     width: 1,
+    //     height: 1,
+    //     deviceScaleFactor: 1,
+    // } )
 
-    // if momo-san command is already listening give second
-    // highest command priority
-    if ( momoIsListening() && highest === 'momo-san' ) {
-      highest = sorted[ 1 ].label
-    }
+    await page.goto( fileUrl( path.join( './index.html' ) ) )
 
-    let trigger = false
+    _tick_timeout = setTimeout( tick, 250 )
+    async function tick () {
+      const text = await page.evaluate( function () {
+        const list = document.getElementById( 'list' )
+        if ( !list ) return
 
-    if ( scores[ '_background_noise_' ] < .25 ) {
-      if ( scores[ highest ] >= 0.35 ) {
-        trigger = true
-      }
-    }
-
-    if ( trigger ) {
-      switch ( highest ) {
-        case 'momo-san':
-          api.events.emit( 'momo' )
-          break
-      }
-
-      const now = Date.now()
-      // add to end of array
-      _words.push( {
-        label: highest,
-        time: now
+        const el = list.firstChild
+        if ( el ) {
+          const t = el.textContent
+          list.removeChild( el )
+          document.getElementById( 'last-recognition' ).textContent = t
+          return t
+        }
       } )
 
-      updateWords( true )
+      if ( text ) {
+        let t = text.trim()
+        t && api.emit( 'message', t )
+        t && api.emit( 'command', t )
+        t && api.emit( 'recognition', t )
+        t && api.emit( 'speechrecognition', t )
+      }
+
+      _tick_timeout = setTimeout( tick, 250 )
     }
-  } )
+  } )()
 
-  socket.on( 'disconnect', function ( command ) {
-    console.log( 'kiite socket left.' )
-  } )
+  return api
 }
 
-function momoIsListening () {
-  for ( let i = 0; i < _words.length; i++ ) {
-    const word = _words[ i ]
-    if ( word.label === 'momo-san' ) return true
-  }
-
-  return false
-}
-
-function tick () {
-  updateWords( false )
-  setTimeout( tick, 1000 )
-}
-
-let _reset_timeout = undefined
-function reset ( ms ) {
-  _words = []
-  _ready = false
-
-  const str = (
-    _words.map( function ( v ) { return v.label } )
-    .join( ',' )
-  )
-  api.words = str
-
-  clearTimeout( _reset_timeout )
-  _reset_timeout = setTimeout( function () {
-    _ready = true
-  }, ms || 2000 )
-}
-
-function updateWords ( hasNewWords ) {
-  if ( _words.length < 1 ) return
-
-  const momoWasListening = momoIsListening()
-
-  const now = Date.now()
-  // remove old words
-  _words = _words.filter( function ( word ) {
-    const delta = ( now - word.time )
-    return delta <= _word_ttl
-  } )
-
-  if ( momoWasListening && !momoIsListening() ) {
-    api.events.emit( 'momofail' )
-    reset()
-    return
-  }
-
-  const str = (
-    _words.map( function ( v ) { return v.label } )
-    .join( ',' )
-  )
-  api.words = str
-  hasNewWords && api.events.emit( 'parsing-new', str )
-
-  if ( str.match( /momo-san,.*ichi-ban/ ) ) {
-    api.events.emit( 'ichi-ban' )
-    reset()
-  }
-
-  if ( str.match( /momo-san,.*ni-ban/ ) ) {
-    api.events.emit( 'ni-ban' )
-    reset()
-  }
-
-  if ( str.match( /momo-san,.*san-ban/ ) ) {
-    api.events.emit( 'san-ban' )
-    reset()
-  }
-
-  if ( str.match( /momo-san,.*hai/ ) ) {
-    api.events.emit( 'hai' )
-    reset()
-  }
-
-  if ( str.match( /momo-san,.*iie/ ) ) {
-    api.events.emit( 'iie' )
-    reset()
-  }
-}
-
-function stop () {
-  _nz.clean()
-  server.close( function () {
-    _started = false
-  } )
-}
-
-async function start () {
-  if ( _started ) return
-  _started = true
-
-  // start ticking
-  setTimeout( tick, 1000 )
-
-  // attach socket (polling) server
-  const io = kiite( server )
-
-  io.on( 'connect', handleSocket )
-
-  const port = await getPort()
-  server.listen( port, function () {
-    api.server = server
-    api.events.emit( 'listening', server.address() )
-    launchPuppeteer( server.address().port )
-  } )
-}
-
-async function launchPuppeteer ( port ) {
-  const opts = {
-    // set to false to see what we're doing during development
-    headless: true
-  }
-
-  // auto allow mic access
-  opts.args = [
-    // enables mic without user dialog prompt
-    '--use-fake-ui-for-media-stream'
-  ]
-
-  const browser = await puppeteer.launch( opts )
-  const pid = browser.process().pid
-  _nz.add( pid )
-  const page = await browser.newPage()
-
-  const preload = (`
-    console.log( '${ Date.now() }' )
-  `)
-
-  fs.writeFileSync( 'preload.js', preload, 'utf8' )
-
-  await page.goto( `http://127.0.0.1:${ port }` )
-}
+process.on( 'exit', async function () {
+  try {
+    await browser.close()
+  } catch ( ignore ) {}
+} )
