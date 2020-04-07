@@ -2,7 +2,8 @@
 [![npm](https://img.shields.io/npm/l/voicecmd.svg?maxAge=3600&style=flat-square)](https://github.com/talmobi/voicecmd/blob/master/LICENSE)
 
 #  voicecmd
-simple wildcard pub/sub store
+use Chrome's inbuilt speech recognition API to transcribe audio
+from the mic into text for node module usage.
 
 ## Easy to use
 
