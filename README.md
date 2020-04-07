@@ -12,7 +12,11 @@ from the mic into text for node module usage.
 npm install -g yt-play
 ```
 ```javascript
-voicecmd | while read line; do echo "$line"; yt-play "$line" & done
+voicecmd | while read line ; do echo "$line"; yt-play "$line" & done
+```
+
+```javascript
+say play welcome to the jungle
 ```
 
 #### Module usage | Basic
