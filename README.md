@@ -9,13 +9,12 @@ from the mic into text for node module usage.
 
 #### CLI usage
 ```javascript
-voicecmd '* | say *'
-// TODO
+voicecmd
 ```
 ```
 ```
 
-#### Module usage 1
+#### Module usage | Basic
 ```javascript
 const voicecmd = require( 'voicecmd' )
 const v = voicecmd()
@@ -25,7 +24,7 @@ v.on( 'speechrecognition', function ( text ) {
 } )
 ```
 
-#### Module usage 1
+#### Module usage | Example
 ```javascript
 const voicecmd = require( 'voicecmd' )
 const ytp = require( 'yt-play-cli' )
@@ -67,14 +66,14 @@ function searchAndPlay ( search ) {
 
 ## Requirements
   Google Chrome must be installed. The module looks for it
-  automatically using the 'chrome-finder' npm module.
+  automatically using the 'chrome-finder' module.
 
 ## About
   Simple way to recognize voice input and do something with it.
 
 ## Why
   Originally intended to capture voice commands and do arbitrary
-  commands such as turning off monitor screens, pausing music,
+  things such as turning off monitor screens, pausing music,
   shutting down, playing specific videos etc...
 
 ## For who? For what?
