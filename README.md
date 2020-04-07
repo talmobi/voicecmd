@@ -7,11 +7,12 @@ from the mic into text for node module usage.
 
 ## Easy to use
 
-#### CLI usage
+#### CLI usage | Example
 ```javascript
-voicecmd
+npm install -g yt-play
 ```
-```
+```javascript
+voicecmd | while read line; do echo "$line"; yt-play "$line" & done
 ```
 
 #### Module usage | Basic
