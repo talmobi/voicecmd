@@ -23,7 +23,7 @@ function searchAndPlay ( search ) {
   } )
 }
 
-searchAndPlay( 'waltz goes on' )
+// searchAndPlay( 'waltz goes on' )
 
 const vc = voicecmd()
 
@@ -32,7 +32,9 @@ vc.on( 'exit', function () {
 } )
 
 vc.on( 'message', function ( text ) {
-  console.log( 'SpeechRecognition: ' + text )
+  // console.log( 'SpeechRecognition: ' + text )
+
+  // return console.log( text )
 
   const command = text.toLowerCase()
   console.log( 'command: ' + command )
