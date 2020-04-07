@@ -44,7 +44,7 @@
     "puppeteer-core": "~2.1.1"
   },
   "devDependencies": {
-    "yt-play-cli": "~0.7.3",
+    "yt-play-cli": "~0.8.0",
     "yt-search": "~1.1.2"
   }
 }
