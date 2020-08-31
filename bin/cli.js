@@ -18,7 +18,7 @@ function exec ( command ) {
   const args = split
 
   const spawn = childProcess.spawn( cmd, args )
-  nz.add( spawn )
+  nz.add( spawn.pid )
 
   spawn.stdout.pipe( process.stdout )
   spawn.stderr.pipe( process.stderr )

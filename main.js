@@ -7,10 +7,14 @@ const path = require( 'path' )
 
 const eeto = require( 'eeto' )
 
+const nozombie = require( 'nozombie' )
+
 module.exports = main
 
 let _tick_timeout
 function main () {
+  const nz = nozombie()
+
   // return this event emitter api to user
   const api = eeto()
 
@@ -38,9 +42,12 @@ function main () {
       ]
     }
     const browser = await puppeteer.launch( opts )
+    nz.add( browser.process().pid )
     const [ page ] = await browser.pages()
 
     page.on( 'close', async function () {
+      nz.kill()
+
       api.emit( 'exit' )
       api.emit( 'close' )
       clearTimeout( _tick_timeout )

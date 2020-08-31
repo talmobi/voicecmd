@@ -35,16 +35,16 @@
     "url": "https://github.com/talmobi/voicecmd/issues"
   },
   "dependencies": {
-    "chrome-finder": "~1.0.6",
-    "commander": "~4.0.1",
+    "chrome-finder": "~1.0.7",
+    "commander": "~6.1.0",
     "eeto": "0.0.4",
     "file-url": "~3.0.0",
-    "kiite": "0.3.3",
-    "nozombie": "~0.6.0",
-    "puppeteer-core": "~2.1.1"
+    "kiite": "~0.4.0",
+    "nozombie": "~1.0.1",
+    "puppeteer-core": "~5.2.1"
   },
   "devDependencies": {
-    "yt-play-cli": "~0.8.0",
-    "yt-search": "~1.1.2"
+    "yt-play-cli": "~0.12.0",
+    "yt-search": "~2.2.4"
   }
 }
