@@ -40,11 +40,11 @@
     "eeto": "0.0.4",
     "file-url": "~3.0.0",
     "kiite": "~0.4.0",
-    "nozombie": "~1.0.2",
+    "nozombie": "~1.1.0",
     "puppeteer-core": "~5.2.1"
   },
   "devDependencies": {
-    "yt-play-cli": "~0.12.0",
+    "yt-play-cli": "~0.12.3",
     "yt-search": "~2.2.4"
   }
 }
