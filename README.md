@@ -7,6 +7,13 @@ from the mic into text for node module usage.
 
 ## Easy to use
 
+### Demo
+```bash
+node ./debug.js
+```
+
+The activatoin command is "play", so try saying something like "play fortunate son"
+
 #### CLI usage | Example
 ```javascript
 npm install -g yt-play
